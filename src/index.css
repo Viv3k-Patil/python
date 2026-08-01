@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+  --ink:#1B1F2A;
+  --ink-soft:#4B5163;
+  --paper:#F7F6F2;
+  --paper-raised:#FFFFFF;
+  --line:#DEDBD2;
+
+  --python:#3B6EA5;
+  --python-bg:#EAF0F7;
+  --oop:#4E5FA8;
+  --oop-bg:#ECEDF8;
+  --sql:#2A7F72;
+  --sql-bg:#E7F3F1;
+  --api:#6D5AA6;
+  --api-bg:#F0EDF7;
+  --web:#B8672E;
+  --web-bg:#FAEEE3;
+  --js:#9C7F1F;
+  --js-bg:#F8F1DE;
+  --react:#2478A3;
+  --react-bg:#E7F1F6;
+  --capstone:#A23E3E;
+  --capstone-bg:#FAEBEB;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;font-size:15.5px;line-height:1.55}
+h1,h2,h3{font-family:'Space Grotesk',sans-serif;margin:0}
+.mono{font-family:'IBM Plex Mono',monospace}
+
+header{background:var(--ink);color:var(--paper);padding:56px 24px 40px}
+.header-inner{max-width:1080px;margin:0 auto}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:0.14em;text-transform:uppercase;color:#9AA3B8;margin-bottom:14px}
+header h1{font-size:clamp(28px,4vw,42px);font-weight:700;letter-spacing:-0.01em;max-width:780px}
+header p.sub{color:#C7CCDA;max-width:640px;margin-top:14px;font-size:16px}
+.stat-row{display:flex;flex-wrap:wrap;gap:0;margin-top:36px;border-top:1px solid #313749}
+.stat{flex:1 1 130px;padding:18px 20px 0;border-right:1px solid #313749}
+.stat:last-child{border-right:none}
+.stat .num{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700}
+.stat .label{font-size:12.5px;color:#9AA3B8;margin-top:2px}
+
+.tech-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{background:var(--paper);color:var(--ink);padding:6px 10px;border-radius:999px;font-weight:600;font-size:13px;border:1px solid var(--line);box-shadow:0 1px 0 rgba(0,0,0,0.02)}
+.chip{display:inline-flex;align-items:center;gap:8px}
+.chip-icon{width:18px;height:18px;flex:0 0 18px;object-fit:contain}
+
+.layout{max-width:1080px;margin:0 auto;display:flex;gap:36px;align-items:flex-start;padding:36px 24px 100px}
+nav.spine{position:sticky;top:24px;flex:0 0 230px;display:flex;flex-direction:column}
+nav.spine a{position:relative;display:flex;align-items:center;gap:12px;padding:9px 4px 9px 4px;text-decoration:none;color:var(--ink-soft);font-size:13.5px;font-weight:500;border-left:2px solid var(--line);padding-left:16px;transition:color .15s ease}
+nav.spine a:hover{color:var(--ink)}
+nav.spine .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;margin-left:-21px;border:2px solid var(--paper);box-shadow:0 0 0 2px var(--line)}
+nav.spine .dayrange{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9AA0AE}
+
+main{flex:1 1 auto;min-width:0}
+
+.note-box{background:var(--paper-raised);border:1px solid var(--line);border-left:3px solid var(--ink);padding:16px 20px;margin-bottom:32px;font-size:14px;color:var(--ink-soft)}
+.note-box strong{color:var(--ink)}
+
+.module{margin-bottom:20px;scroll-margin-top:20px}
+.module-head{display:flex;align-items:center;gap:16px;background:var(--paper-raised);border:1px solid var(--line);border-radius:10px;padding:18px 20px;cursor:pointer}
+.module-head .idx{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;width:34px;text-align:center}
+.module-head .titles{flex:1 1 auto}
+.module-head h2{font-size:17px}
+.module-head .meta{font-size:12.5px;color:var(--ink-soft);margin-top:3px}
+.module-head .chev{font-size:13px;color:var(--ink-soft);transition:transform .18s ease}
+details[open] > .module-head .chev{transform:rotate(90deg)}
+details > .module-head{ list-style:none}
+details > .module-head::-webkit-details-marker{display:none}
+
+.day-list{border:1px solid var(--line);border-top:none;border-radius:0 0 10px 10px;background:var(--paper-raised);padding:6px 0;margin-top:-1px}
+.day{display:grid;grid-template-columns:78px 1fr;gap:16px;padding:14px 20px;border-top:1px solid #EEEDE7}
+.day:first-child{border-top:none}
+.day .tag{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;padding:4px 8px;border-radius:5px;height:fit-content;white-space:nowrap}
+.day h3{font-size:14.5px;font-weight:600;margin-bottom:6px}
+.day ul{margin:0;padding-left:18px;font-size:13.6px;color:var(--ink-soft)}
+.day li{margin-bottom:2px}
+.day .flag{display:inline-block;margin-left:8px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;padding:1px 6px;border-radius:4px;background:var(--capstone-bg);color:var(--capstone);font-weight:600}
+
+.m-python .idx, .m-python .tag{background:var(--python-bg); color:var(--python)}
+.m-oop .idx, .m-oop .tag{background:var(--oop-bg); color:var(--oop)}
+.m-sql .idx, .m-sql .tag{background:var(--sql-bg); color:var(--sql)}
+.m-api .idx, .m-api .tag{background:var(--api-bg); color:var(--api)}
+.m-web .idx, .m-web .tag{background:var(--web-bg); color:var(--web)}
+.m-js .idx, .m-js .tag{background:var(--js-bg); color:var(--js)}
+.m-react .idx, .m-react .tag{background:var(--react-bg); color:var(--react)}
+.m-capstone .idx, .m-capstone .tag{background:var(--capstone-bg); color:var(--capstone)}
+
+.nav-dot-python{background:var(--python)}
+.nav-dot-oop{background:var(--oop)}
+.nav-dot-sql{background:var(--sql)}
+.nav-dot-api{background:var(--api)}
+.nav-dot-web{background:var(--web)}
+.nav-dot-js{background:var(--js)}
+.nav-dot-react{background:var(--react)}
+.nav-dot-capstone{background:var(--capstone)}
+
+.cut-box{margin-top:36px;background:var(--paper-raised);border:1px solid var(--line);border-radius:10px;padding:22px 24px}
+.cut-box h2{font-size:16px;margin-bottom:10px}
+.cut-box p{font-size:13.8px;color:var(--ink-soft);margin:0 0 12px}
+.cut-box ul{margin:0;padding-left:20px;font-size:13.8px;color:var(--ink-soft);columns:2;column-gap:32px}
+.cut-box li{margin-bottom:6px;break-inside:avoid}
+
+@media (max-width:800px){
+  .layout{flex-direction:column}
+  nav.spine{position:static;flex-direction:row;flex-wrap:wrap;gap:8px 4px;width:100%}
+  nav.spine a{border-left:none;padding-left:4px}
+  nav.spine .dot{margin-left:0}
+  nav.spine .dayrange{display:none}
+  .day{grid-template-columns:1fr;gap:6px}
+  .cut-box ul{columns:1}
+}
+
+footer{text-align:center;padding:30px 24px 60px;color:#9AA0AE;font-size:12.5px}
