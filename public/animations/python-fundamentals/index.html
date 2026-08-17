@@ -1,164 +1,1482 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Python Fundamentals — Interactive Animation</title>
-  <style>
-    :root {
-      --bg: #FFFFFF;
-      --surface: #F6F8FA;
-      --border: #D0D7DE;
-      --text-primary: #24292F;
-      --text-secondary: #57606A;
-      --accent: #0969DA;
-      --python: #3B6EA5;
-    }
 
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: var(--bg);
-      color: var(--text-primary);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    }
+<meta charset="UTF-8">
 
-    body {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    .container {
-      max-width: 900px;
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 48px 32px;
-      text-align: center;
-    }
+<title>Where does a = 10 actually live? — Python Memory Model</title>
 
-    h1 {
-      font-size: 28px;
-      font-weight: 700;
-      margin: 0 0 12px;
-      color: var(--python);
-    }
+<link rel="preconnect" href="https://fonts.googleapis.com">
 
-    p {
-      font-size: 15px;
-      color: var(--text-secondary);
-      line-height: 1.6;
-      margin: 0 0 32px;
-    }
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    .placeholder {
-      background: var(--bg);
-      border: 2px dashed var(--border);
-      border-radius: 8px;
-      padding: 60px 32px;
-      margin-bottom: 32px;
-    }
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    .placeholder-icon {
-      font-size: 48px;
-      margin-bottom: 16px;
-    }
+<style>
 
-    .placeholder-text {
-      font-size: 14px;
-      color: var(--text-secondary);
-    }
+  :root{
 
-    .button-group {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
+    --bg: #0a0d13;
 
-    button {
-      padding: 10px 16px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text-primary);
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s ease-out;
-    }
+    --panel: #10141c;
 
-    button:hover {
-      background: var(--surface);
-      border-color: var(--accent);
-      color: var(--accent);
-    }
+    --panel-2: #0d1119;
 
-    button.primary {
-      background: var(--accent);
-      color: #FFFFFF;
-      border-color: var(--accent);
-    }
+    --grid-line: #1b2230;
 
-    button.primary:hover {
-      background: #0860CA;
-      border-color: #0860CA;
-    }
+    --cell-bg: #131826;
 
-    .info-box {
-      background: var(--bg);
-      border-left: 3px solid var(--python);
-      padding: 16px 20px;
-      border-radius: 6px;
-      margin-top: 32px;
-      text-align: left;
-      font-size: 13px;
-      line-height: 1.6;
-    }
+    --cell-border: #232c3d;
 
-    .info-box strong {
-      color: var(--python);
-    }
+    --text-primary: #e8ecf4;
 
-    @media (prefers-reduced-motion: reduce) {
-      * { animation-duration: 0.01s !important; transition-duration: 0.01s !important; }
-    }
-  </style>
+    --text-secondary: #9aa5b8;
+
+    --text-dim: #55607a;
+
+    --accent-cyan: #4dd6c9;
+
+    --accent-amber: #f2b84b;
+
+    --accent-coral: #ef8672;
+
+    --accent-violet: #a08cff;
+
+    --accent-cyan-glow: rgba(77, 214, 201, 0.35);
+
+    --accent-violet-glow: rgba(160, 140, 255, 0.35);
+
+    --accent-coral-glow: rgba(239, 134, 114, 0.35);
+
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+
+    --sans: 'Inter', -apple-system, sans-serif;
+
+    --dur: 0.5s;
+
+  }
+
+
+
+  @media (prefers-reduced-motion: reduce){
+
+    :root{ --dur: 0.01s; }
+
+    *{ animation-duration: 0.01s !important; transition-duration: 0.01s !important; }
+
+  }
+
+
+
+  *{ box-sizing: border-box; }
+
+
+
+  html, body{
+
+    margin:0; padding:0;
+
+    background: var(--bg);
+
+    color: var(--text-primary);
+
+    font-family: var(--sans);
+
+    -webkit-font-smoothing: antialiased;
+
+  }
+
+
+
+  body{
+
+    min-height: 100vh;
+
+    background-image:
+
+      linear-gradient(var(--panel) 1px, transparent 1px),
+
+      linear-gradient(90deg, var(--panel) 1px, transparent 1px);
+
+    background-size: 28px 28px;
+
+    padding: 32px 20px 64px;
+
+  }
+
+
+
+  .wrap{ max-width: 1180px; margin: 0 auto; }
+
+
+
+  /* ---------- Header ---------- */
+
+  header{ margin-bottom: 30px; }
+
+  .eyebrow{
+
+    font-family: var(--mono);
+
+    font-size: 12px;
+
+    letter-spacing: 0.16em;
+
+    text-transform: uppercase;
+
+    color: var(--accent-cyan);
+
+    display:flex; align-items:center; gap:10px;
+
+    margin-bottom: 12px;
+
+  }
+
+  .eyebrow::before{
+
+    content:"";
+
+    width:7px; height:7px; border-radius:50%;
+
+    background: var(--accent-cyan);
+
+    box-shadow: 0 0 10px var(--accent-cyan-glow);
+
+  }
+
+  h1{
+
+    font-size: clamp(26px, 4vw, 40px);
+
+    line-height: 1.15;
+
+    margin: 0 0 12px;
+
+    font-weight: 800;
+
+    letter-spacing: -0.02em;
+
+  }
+
+  h1 .hl{ color: var(--accent-cyan); }
+
+  header p{
+
+    color: var(--text-secondary);
+
+    max-width: 640px;
+
+    font-size: 15px;
+
+    line-height: 1.6;
+
+    margin: 0;
+
+  }
+
+
+
+  /* ---------- Tabs ---------- */
+
+  .tabs{
+
+    display:flex; gap: 8px;
+
+    margin: 28px 0 18px;
+
+    border-bottom: 1px solid var(--grid-line);
+
+  }
+
+  .tab{
+
+    font-family: var(--mono);
+
+    font-size: 13px;
+
+    background: none; border: none;
+
+    color: var(--text-dim);
+
+    padding: 10px 4px 12px;
+
+    margin-right: 22px;
+
+    cursor: pointer;
+
+    position: relative;
+
+    letter-spacing: 0.02em;
+
+  }
+
+  .tab .n{ opacity: 0.6; margin-right: 8px; }
+
+  .tab::after{
+
+    content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px;
+
+    background: var(--accent-cyan);
+
+    transform: scaleX(0); transform-origin: left;
+
+    transition: transform var(--dur) ease;
+
+  }
+
+  .tab.active{ color: var(--text-primary); }
+
+  .tab.active::after{ transform: scaleX(1); }
+
+  .tab:hover{ color: var(--text-primary); }
+
+
+
+  /* ---------- Stage ---------- */
+
+  .stage-shell{
+
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+
+    border: 1px solid var(--grid-line);
+
+    border-radius: 14px;
+
+    overflow: hidden;
+
+  }
+
+
+
+  .code-strip{
+
+    padding: 16px 22px;
+
+    border-bottom: 1px solid var(--grid-line);
+
+    background: #0c0f16;
+
+    display:flex; align-items:center; gap: 14px;
+
+    flex-wrap: wrap;
+
+  }
+
+  .code-strip .tag{
+
+    font-family: var(--mono); font-size: 11px; color: var(--text-dim);
+
+    letter-spacing: 0.08em;
+
+  }
+
+  pre.code-line{
+
+    margin:0; font-family: var(--mono); font-size: 16px;
+
+    padding: 6px 12px; border-radius: 6px;
+
+    background: transparent;
+
+    color: var(--text-dim);
+
+    transition: background var(--dur) ease, color var(--dur) ease, box-shadow var(--dur) ease;
+
+    border-left: 2px solid transparent;
+
+  }
+
+  pre.code-line.is-active{
+
+    color: var(--text-primary);
+
+    background: rgba(77,214,201,0.06);
+
+    border-left: 2px solid var(--accent-cyan);
+
+  }
+
+  .tok-name{ color: var(--accent-cyan); }
+
+  .tok-op{ color: var(--text-dim); }
+
+  .tok-num{ color: var(--accent-coral); }
+
+  .tok-str{ color: var(--accent-amber); }
+
+  .tok-punc{ color: var(--text-secondary); }
+
+  .caret{
+
+    display:inline-block; width:2px; height:15px; background: var(--accent-cyan);
+
+    margin-left: 2px; vertical-align: -3px;
+
+    animation: blink 1s steps(1) infinite;
+
+  }
+
+  pre.code-line.is-active .caret{ opacity: 1; }
+
+  pre.code-line:not(.is-active) .caret{ opacity: 0; }
+
+  @keyframes blink{ 50%{ opacity: 0; } }
+
+
+
+  .stage{
+
+    position: relative;
+
+    display: grid;
+
+    grid-template-columns: 220px 1fr;
+
+    gap: 0;
+
+    min-height: 360px;
+
+  }
+
+  @media (max-width: 780px){
+
+    .stage{ grid-template-columns: 1fr; }
+
+  }
+
+
+
+  .panel-label{
+
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+
+    text-transform: uppercase; color: var(--text-dim);
+
+    padding: 14px 18px 8px;
+
+  }
+
+
+
+  /* Namespace panel */
+
+  .namespace-panel{
+
+    border-right: 1px solid var(--grid-line);
+
+    background: var(--panel);
+
+    display:flex; flex-direction: column;
+
+  }
+
+  @media (max-width: 780px){
+
+    .namespace-panel{ border-right:none; border-bottom: 1px solid var(--grid-line); }
+
+  }
+
+  .namespace-body{
+
+    flex:1; padding: 10px 18px 22px;
+
+    display:flex; align-items:flex-start;
+
+  }
+
+  .name-box{
+
+    font-family: var(--mono);
+
+    border: 1.5px dashed var(--text-dim);
+
+    border-radius: 8px;
+
+    padding: 10px 16px;
+
+    min-width: 84px;
+
+    text-align: center;
+
+    color: var(--text-secondary);
+
+    background: rgba(255,255,255,0.02);
+
+    opacity: 0;
+
+    transform: translateY(6px);
+
+    animation: nameIn var(--dur) ease forwards;
+
+  }
+
+  .name-box .nm{ font-size: 17px; font-weight: 600; display:block; }
+
+  .name-box .ty{
+
+    font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
+
+    color: var(--text-dim); margin-top: 4px; display:block; opacity: 0;
+
+    transition: opacity var(--dur) ease;
+
+  }
+
+  .name-box.is-bound{
+
+    border-style: solid;
+
+    border-color: var(--accent-cyan);
+
+    color: var(--text-primary);
+
+    box-shadow: 0 0 0 3px var(--accent-cyan-glow);
+
+  }
+
+  .name-box.is-bound .ty{ opacity: 1; color: var(--accent-cyan); }
+
+  @keyframes nameIn{ to{ opacity: 1; transform: translateY(0); } }
+
+
+
+  /* Memory grid panel */
+
+  .memory-panel{ background: var(--panel-2); position:relative; }
+
+  .chip-legend{
+
+    display:flex; justify-content: space-between; align-items:center;
+
+    padding: 0 18px; margin-top: -2px;
+
+  }
+
+  .chip-legend .silk{
+
+    font-family: var(--mono); font-size: 10px; color: var(--text-dim);
+
+    letter-spacing: 0.08em;
+
+  }
+
+
+
+  .mem-grid{
+
+    display: grid;
+
+    grid-template-columns: repeat(8, 1fr);
+
+    gap: 8px;
+
+    padding: 10px 18px 20px;
+
+  }
+
+  @media (max-width: 640px){
+
+    .mem-grid{ grid-template-columns: repeat(4, 1fr); }
+
+  }
+
+
+
+  .cell{
+
+    position: relative;
+
+    background: var(--cell-bg);
+
+    border: 1px solid var(--cell-border);
+
+    border-radius: 7px;
+
+    min-height: 58px;
+
+    padding: 6px 7px;
+
+    display:flex; flex-direction: column; justify-content: flex-start;
+
+    transition: border-color var(--dur) ease, box-shadow var(--dur) ease, background var(--dur) ease, transform var(--dur) ease;
+
+  }
+
+  .cell-addr{
+
+    font-family: var(--mono); font-size: 8.5px; color: var(--text-dim);
+
+    letter-spacing: 0.02em;
+
+  }
+
+  .cell.is-int{
+
+    border-color: var(--accent-coral);
+
+    background: linear-gradient(180deg, rgba(239,134,114,0.14), rgba(239,134,114,0.04));
+
+    box-shadow: 0 0 0 1px rgba(239,134,114,0.18), 0 0 14px -4px var(--accent-coral-glow);
+
+    transform: translateY(-1px);
+
+  }
+
+  .cell.is-list{
+
+    border-color: var(--accent-violet);
+
+    background: linear-gradient(180deg, rgba(160,140,255,0.14), rgba(160,140,255,0.04));
+
+    box-shadow: 0 0 0 1px rgba(160,140,255,0.18), 0 0 14px -4px var(--accent-violet-glow);
+
+    transform: translateY(-1px);
+
+    grid-column: span 2;
+
+  }
+
+  @media (max-width: 640px){ .cell.is-list{ grid-column: span 4; } }
+
+
+
+  .cell-val{
+
+    font-family: var(--mono); font-weight: 700; font-size: 19px;
+
+    color: var(--accent-coral);
+
+    margin-top: 4px;
+
+  }
+
+  .cell-badge{
+
+    position:absolute; top:5px; right:6px;
+
+    font-family: var(--mono); font-size: 8px; letter-spacing: 0.05em;
+
+    padding: 1px 5px; border-radius: 4px;
+
+    text-transform: uppercase;
+
+  }
+
+  .cell.is-int .cell-badge{ background: rgba(239,134,114,0.18); color: var(--accent-coral); }
+
+  .cell.is-list .cell-badge{ background: rgba(160,140,255,0.18); color: var(--accent-violet); }
+
+
+
+  .list-head{
+
+    font-family: var(--mono); font-size: 10.5px; color: var(--accent-violet);
+
+    margin-top: 3px; font-weight: 600;
+
+  }
+
+  .slots{ display:flex; gap: 6px; margin-top: 8px; }
+
+  .slot{
+
+    width: 26px; height: 22px; border-radius: 5px;
+
+    border: 1px dashed rgba(160,140,255,0.55);
+
+    display:flex; align-items:center; justify-content:center;
+
+    font-family: var(--mono); font-size: 9px; color: var(--text-dim);
+
+    background: rgba(160,140,255,0.05);
+
+  }
+
+
+
+  /* SVG arrow overlay */
+
+  svg.overlay{
+
+    position: absolute; inset: 0;
+
+    width: 100%; height: 100%;
+
+    pointer-events: none;
+
+    overflow: visible;
+
+  }
+
+  path.pointer-arrow{
+
+    fill: none;
+
+    stroke: var(--accent-cyan);
+
+    stroke-width: 2;
+
+    stroke-linecap: round;
+
+    filter: drop-shadow(0 0 4px var(--accent-cyan-glow));
+
+    transition: stroke-dashoffset 0.9s cubic-bezier(.4,0,.2,1);
+
+  }
+
+  circle.origin-dot{ fill: var(--accent-cyan); }
+
+
+
+  /* Caption + callout */
+
+  .caption-bar{
+
+    padding: 16px 22px 8px;
+
+    border-top: 1px solid var(--grid-line);
+
+    background: #0c0f16;
+
+    min-height: 26px;
+
+  }
+
+  .caption-bar p{
+
+    margin:0; font-size: 14.5px; color: var(--text-secondary); line-height: 1.5;
+
+    opacity: 0; transform: translateY(4px);
+
+    animation: capIn var(--dur) ease forwards;
+
+  }
+
+  @keyframes capIn{ to{ opacity:1; transform: translateY(0);} }
+
+
+
+  .callout{
+
+    margin: 4px 22px 18px;
+
+    padding: 12px 16px;
+
+    border-radius: 9px;
+
+    border: 1px solid rgba(242,184,75,0.35);
+
+    background: rgba(242,184,75,0.07);
+
+    display:flex; gap: 10px; align-items:flex-start;
+
+    max-height: 0; opacity: 0; overflow:hidden;
+
+    transition: max-height var(--dur) ease, opacity var(--dur) ease, margin var(--dur) ease;
+
+  }
+
+  .callout.show{ max-height: 140px; opacity: 1; }
+
+  .callout .ic{
+
+    font-family: var(--mono); color: var(--accent-amber); font-size: 13px; font-weight: 700;
+
+    flex-shrink: 0; margin-top: 1px;
+
+  }
+
+  .callout p{ margin:0; font-size: 13.5px; color: var(--text-primary); line-height: 1.55; }
+
+  .callout b{ color: var(--accent-amber); }
+
+
+
+  /* Controls */
+
+  .controls{
+
+    display:flex; align-items:center; gap: 10px;
+
+    padding: 16px 22px 22px;
+
+    flex-wrap: wrap;
+
+    border-top: 1px solid var(--grid-line);
+
+  }
+
+  button.ctrl{
+
+    font-family: var(--mono); font-size: 12.5px;
+
+    background: var(--cell-bg);
+
+    border: 1px solid var(--cell-border);
+
+    color: var(--text-primary);
+
+    padding: 9px 14px;
+
+    border-radius: 7px;
+
+    cursor: pointer;
+
+    display:flex; align-items:center; gap: 7px;
+
+    transition: border-color 0.2s ease, background 0.2s ease, opacity 0.2s ease, transform 0.1s ease;
+
+  }
+
+  button.ctrl:hover:not(:disabled){ border-color: var(--accent-cyan); background: rgba(77,214,201,0.08); }
+
+  button.ctrl:active:not(:disabled){ transform: scale(0.97); }
+
+  button.ctrl:disabled{ opacity: 0.35; cursor: not-allowed; }
+
+  button.ctrl.primary{
+
+    background: var(--accent-cyan); color: #04211d; border-color: var(--accent-cyan); font-weight: 600;
+
+  }
+
+  button.ctrl.primary:hover{ filter: brightness(1.08); }
+
+  button.ctrl svg{ width: 13px; height: 13px; }
+
+  button:focus-visible{ outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+
+
+
+  .spacer{ flex: 1; }
+
+
+
+  .steps{ display:flex; align-items:center; gap: 6px; }
+
+  .dot{
+
+    width: 8px; height: 8px; border-radius: 50%;
+
+    background: var(--cell-border); border: none; cursor: pointer; padding: 0;
+
+    transition: background 0.2s ease, transform 0.2s ease;
+
+  }
+
+  .dot:hover{ transform: scale(1.25); }
+
+  .dot.active{ background: var(--accent-cyan); box-shadow: 0 0 0 3px var(--accent-cyan-glow); }
+
+  .step-count{ font-family: var(--mono); font-size: 11px; color: var(--text-dim); margin-left: 4px; }
+
+
+
+  /* Legend */
+
+  .legend{
+
+    display:flex; flex-wrap:wrap; gap: 18px;
+
+    padding: 4px 22px 20px;
+
+    font-family: var(--mono); font-size: 11.5px; color: var(--text-secondary);
+
+  }
+
+  .legend .item{ display:flex; align-items:center; gap: 7px; }
+
+  .legend .swatch{ width: 11px; height: 11px; border-radius: 3px; }
+
+  .sw-free{ background: var(--cell-bg); border: 1px solid var(--cell-border); }
+
+  .sw-int{ background: var(--accent-coral); }
+
+  .sw-list{ background: var(--accent-violet); }
+
+  .sw-ptr{ background: var(--accent-cyan); }
+
+
+
+  footer{
+
+    max-width: 640px; margin: 26px auto 0;
+
+    font-size: 12.5px; color: var(--text-dim); line-height: 1.6;
+
+    text-align: center;
+
+  }
+
+</style>
+
 </head>
+
 <body>
 
-<div class="container">
-  <h1>🐍 Python Fundamentals</h1>
-  <p>Core syntax, data structures, and functions — Days 1–9</p>
 
-  <div class="placeholder">
-    <div class="placeholder-icon">📊</div>
-    <div class="placeholder-text">Interactive Animation — Placeholder</div>
-  </div>
 
-  <p>This animation will cover:</p>
-  <ul style="text-align: left; display: inline-block; font-size: 14px; color: var(--text-secondary);">
-    <li>Python setup & environment</li>
-    <li>Variables and data types</li>
-    <li>Control flow (if/else, loops)</li>
-    <li>Functions and scope</li>
-    <li>Data structures (lists, dicts, sets)</li>
-  </ul>
+<div class="wrap">
 
-  <div class="button-group">
-    <button class="primary">Start Learning</button>
-    <button>Next Topic →</button>
-  </div>
+<header>
 
-  <div class="info-box">
-    <strong>Note:</strong> This is a template. Replace this placeholder with an interactive visualization of Python concepts. Keep animations self-contained, responsive, and respect prefers-reduced-motion.
-  </div>
+<div class="eyebrow">CPython under the hood</div>
+
+<h1>Where does <span class="hl">a = 10</span> actually live?</h1>
+
+<p>Every Python assignment reaches into RAM. Watch a variable get created, an object get allocated at a real address, and a pointer connect the two — then see why lists work differently under the same rules.</p>
+
+</header>
+
+
+
+<div class="tabs" role="tablist">
+
+<button class="tab active" id="tab-single" role="tab" aria-selected="true"><span class="n">01</span>Single variable</button>
+
+<button class="tab" id="tab-list" role="tab" aria-selected="false"><span class="n">02</span>A list</button>
+
 </div>
 
+
+
+<div class="stage-shell">
+
+
+
+<div class="code-strip">
+
+<span class="tag">main.py</span>
+<input id="valueInput" type="text" value="10" aria-label="Value to assign" style="font-family:var(--mono);font-size:16px;padding:8px 10px;border:1px solid var(--cell-border);border-radius:6px;background:var(--cell-bg);color:var(--text-primary);min-width:180px;">
+<button class="ctrl primary" id="btnApplyValue" type="button">Use this value</button>
+
+<pre class="code-line" id="codeLine"></pre>
+
+</div>
+
+
+
+<div class="stage" id="stageEl">
+
+<div class="namespace-panel">
+
+<div class="panel-label">Namespace — your names</div>
+
+<div class="namespace-body" id="nsBody"></div>
+
+</div>
+
+
+
+<div class="memory-panel">
+
+<div class="chip-legend">
+
+<div class="panel-label" style="padding-left:0;">RAM — heap memory</div>
+
+<div class="silk">PYMEM·3300 · 32 CELLS</div>
+
+</div>
+
+<div class="mem-grid" id="memGrid"></div>
+
+</div>
+
+
+
+<svg class="overlay" id="overlay">
+
+<defs>
+
+<marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+
+<path d="M0,0 L6,3 L0,6 Z" fill="var(--accent-cyan)"></path>
+
+</marker>
+
+</defs>
+
+<g id="arrowLayer"></g>
+
+</svg>
+
+</div>
+
+
+
+<div class="caption-bar" aria-live="polite">
+
+<p id="captionText"></p>
+
+</div>
+
+
+
+<div class="callout" id="callout">
+
+<span class="ic">i</span>
+
+<p id="calloutText"></p>
+
+</div>
+
+
+
+<div class="legend">
+
+<div class="item"><span class="swatch sw-free"></span>Free cell</div>
+
+<div class="item"><span class="swatch sw-int"></span>Integer object</div>
+
+<div class="item"><span class="swatch sw-list"></span>List object</div>
+
+<div class="item"><span class="swatch sw-ptr"></span>Reference (pointer)</div>
+
+</div>
+
+
+
+<div class="controls">
+
+<button class="ctrl" id="btnReset" title="Reset">
+
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 4v6h6"/></svg>
+
+        Reset
+
+</button>
+
+<button class="ctrl" id="btnPrev" title="Step back">
+
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 20 9 12l10-8v16Z"/><path d="M5 5v14"/></svg>
+
+        Back
+
+</button>
+
+<button class="ctrl primary" id="btnPlay" title="Play / Pause">
+
+<svg id="iconPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+
+<svg id="iconPause" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+
+<span id="playLabel">Play</span>
+
+</button>
+
+<button class="ctrl" id="btnNext" title="Step forward">
+
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4l10 8-10 8V4Z"/><path d="M19 5v14"/></svg>
+
+        Next
+
+</button>
+
+
+
+<div class="spacer"></div>
+
+
+
+<div class="steps" id="steps"></div>
+
+<span class="step-count" id="stepCount"></span>
+
+</div>
+
+
+
+</div>
+
+
+
+<footer>
+
+    Simplified for teaching. Real CPython adds optimizations not shown here — e.g. small‑integer caching (−5…256) and reference counting for garbage collection.
+
+</footer>
+
+</div>
+
+
+
+<script>
+
+(function(){
+
+  "use strict";
+
+
+
+  // ---------- Address helpers ----------
+
+  const CELL_COUNT = 32;
+
+  function addrFor(i){
+
+    return "0x" + (0x7FE2A000 + i * 16).toString(16).toUpperCase();
+
+  }
+
+
+
+  // ---------- Build persistent memory grid ----------
+
+  const memGrid = document.getElementById("memGrid");
+
+  const cells = [];
+
+  for (let i = 0; i < CELL_COUNT; i++){
+
+    const div = document.createElement("div");
+
+    div.className = "cell";
+
+    div.id = "cell-" + i;
+
+    div.dataset.addr = addrFor(i);
+
+    div.innerHTML = '<span class="cell-addr">' + addrFor(i) + "</span>";
+
+    memGrid.appendChild(div);
+
+    cells.push(div);
+
+  }
+
+
+
+  function resetCells(){
+
+    cells.forEach(c => {
+      c.className = "cell";
+      c.innerHTML = '<span class="cell-addr">' + c.dataset.addr + "</span>";
+    });
+
+  }
+
+
+
+  // ---------- Demo definitions ----------
+
+  const demos = {
+
+    single: {
+      frames: [
+        {
+          code: "a <span class='tok-op'>=</span> <span class='tok-num'>10</span><span class='caret'></span>",
+          ns: [],
+          cells: {},
+          caption: "Ready. Press Play to see what happens.",
+          callout: false,
+          arrows: []
+        },
+        {
+          code: "a <span class='tok-op'>=</span> <span class='tok-num'>10</span>",
+          ns: [{ name: "a", type: "reference", value: null, addr: null, bound: false }],
+          cells: {},
+          caption: "1. A new variable name 'a' is created in the namespace.",
+          callout: false,
+          arrows: []
+        },
+        {
+          code: "a <span class='tok-op'>=</span> <span class='tok-num'>10</span>",
+          ns: [{ name: "a", type: "reference", value: null, addr: "0x7FE2A000", bound: false }],
+          cells: { "0": { type: "int", value: "10", addr: "0x7FE2A000" } },
+          caption: "2. An integer object holding 10 is created in RAM at address 0x7FE2A000.",
+          callout: false,
+          arrows: []
+        },
+        {
+          code: "a <span class='tok-op'>=</span> <span class='tok-num'>10</span>",
+          ns: [{ name: "a", type: "reference", value: "10", addr: "0x7FE2A000", bound: true }],
+          cells: { "0": { type: "int", value: "10", addr: "0x7FE2A000" } },
+          caption: "3. The name 'a' is bound to the object. The variable holds a reference (pointer).",
+          callout: true,
+          calloutMsg: "The variable 'a' doesn't hold the value 10 — it holds a reference to the object at 0x7FE2A000.",
+          arrows: [{ from: "ns", to: "cell-0", text: "ref" }]
+        }
+      ]
+    },
+
+    list: {
+      frames: [
+        {
+          code: "lst <span class='tok-op'>=</span> [<span class='tok-num'>1</span>, <span class='tok-num'>2</span>, <span class='tok-num'>3</span>]<span class='caret'></span>",
+          ns: [],
+          cells: {},
+          caption: "Ready. Press Play to see how lists differ.",
+          callout: false,
+          arrows: []
+        },
+        {
+          code: "lst <span class='tok-op'>=</span> [<span class='tok-num'>1</span>, <span class='tok-num'>2</span>, <span class='tok-num'>3</span>]",
+          ns: [{ name: "lst", type: "reference", value: null, addr: null, bound: false }],
+          cells: {},
+          caption: "1. A new variable name 'lst' is created in the namespace.",
+          callout: false,
+          arrows: []
+        },
+        {
+          code: "lst <span class='tok-op'>=</span> [<span class='tok-num'>1</span>, <span class='tok-num'>2</span>, <span class='tok-num'>3</span>]",
+          ns: [{ name: "lst", type: "reference", value: null, addr: "0x7FE2A000", bound: false }],
+          cells: { "0": { type: "list", value: "list", addr: "0x7FE2A000", content: "→ [3 items]" } },
+          caption: "2. A list object is created in RAM at 0x7FE2A000. It stores references to the integers.",
+          callout: false,
+          arrows: []
+        },
+        {
+          code: "lst <span class='tok-op'>=</span> [<span class='tok-num'>1</span>, <span class='tok-num'>2</span>, <span class='tok-num'>3</span>]",
+          ns: [{ name: "lst", type: "reference", value: "list", addr: "0x7FE2A000", bound: true }],
+          cells: { "0": { type: "list", value: "list", addr: "0x7FE2A000", content: "→ [3 items]" }, "1": { type: "int", value: "1" }, "2": { type: "int", value: "2" }, "3": { type: "int", value: "3" } },
+          caption: "3. The name 'lst' is bound to the list object. Modifying the list updates the shared object.",
+          callout: true,
+          calloutMsg: "Lists hold references to objects. All variables pointing to the same list see the same data.",
+          arrows: [{ from: "ns", to: "cell-0", text: "ref" }]
+        }
+      ]
+    }
+  };
+
+
+
+  // ---------- State ----------
+
+  const state = { demo: "single", frame: 0, timer: null, playing: false };
+
+
+
+  const els = {
+
+    codeLine: document.getElementById("codeLine"),
+    valueInput: document.getElementById("valueInput"),
+    btnApplyValue: document.getElementById("btnApplyValue"),
+
+    nsBody: document.getElementById("nsBody"),
+
+    caption: document.getElementById("captionText"),
+
+    callout: document.getElementById("callout"),
+
+    calloutText: document.getElementById("calloutText"),
+
+    stage: document.getElementById("stageEl"),
+
+    overlay: document.getElementById("overlay"),
+
+    arrowLayer: document.getElementById("arrowLayer"),
+
+    btnPlay: document.getElementById("btnPlay"),
+
+    btnReset: document.getElementById("btnReset"),
+
+    btnPrev: document.getElementById("btnPrev"),
+
+    btnNext: document.getElementById("btnNext"),
+
+    iconPlay: document.getElementById("iconPlay"),
+
+    iconPause: document.getElementById("iconPause"),
+
+    playLabel: document.getElementById("playLabel"),
+
+    steps: document.getElementById("steps"),
+
+    stepCount: document.getElementById("stepCount"),
+
+    tabSingle: document.getElementById("tab-single"),
+
+    tabList: document.getElementById("tab-list")
+
+  };
+
+
+
+  function currentDemo(){ return demos[state.demo]; }
+
+  function totalFrames(){ return currentDemo().frames.length; }
+
+
+
+  // ---------- Rendering ----------
+
+  function renderNamespace(entries){
+
+    els.nsBody.innerHTML = "";
+
+    entries.forEach(entry => {
+      const box = document.createElement("div");
+      box.className = "name-box" + (entry.bound ? " is-bound" : "");
+      box.innerHTML = `<span class="nm">${entry.name}</span><span class="ty">${entry.type}</span>`;
+      els.nsBody.appendChild(box);
+    });
+
+  }
+
+
+
+  function renderCells(cellMap){
+
+    resetCells();
+
+    Object.keys(cellMap).forEach(idx => {
+      const cell = cells[idx];
+      const data = cellMap[idx];
+      cell.classList.add("is-" + data.type);
+      let html = '<span class="cell-addr">' + cell.dataset.addr + '</span>';
+      if (data.type === "int") {
+        html += '<span class="cell-val">' + data.value + '</span><span class="cell-badge">int</span>';
+      } else if (data.type === "list") {
+        html += '<span class="list-head">list</span><div class="slots"><span class="slot">0x...</span></div><span class="cell-badge">list</span>';
+      }
+      cell.innerHTML = html;
+    });
+
+  }
+
+
+
+  function rectPoint(rect, towardX, towardY){
+
+    const cx = rect.left + rect.width / 2;
+
+    const cy = rect.top + rect.height / 2;
+
+    const dx = towardX - cx;
+
+    const dy = towardY - cy;
+
+    if (dx === 0 && dy === 0) return { x: cx, y: cy };
+
+    const hw = rect.width / 2, hh = rect.height / 2;
+
+    const tx = dx !== 0 ? hw / Math.abs(dx) : Infinity;
+
+    const ty = dy !== 0 ? hh / Math.abs(dy) : Infinity;
+
+    const t = Math.min(tx, ty);
+
+    return { x: cx + dx * t, y: cy + dy * t };
+
+  }
+
+
+
+  function drawArrows(specs){
+
+    els.arrowLayer.innerHTML = "";
+
+    if (!specs || !specs.length) return;
+
+    const stageRect = els.stage.getBoundingClientRect();
+
+
+
+    specs.forEach(spec => {
+      const fromEl = spec.from === "ns" ? els.nsBody.firstChild : document.getElementById(spec.to.replace("cell-", "cell-"));
+      const toEl = document.getElementById(spec.to);
+      if (!fromEl || !toEl) return;
+      const fromRect = fromEl.getBoundingClientRect();
+      const toRect = toEl.getBoundingClientRect();
+      const p1 = rectPoint(fromRect, toRect.left + toRect.width / 2, toRect.top + toRect.height / 2);
+      const p2 = rectPoint(toRect, fromRect.left + fromRect.width / 2, fromRect.top + fromRect.height / 2);
+      const rp1 = { x: p1.x - stageRect.left, y: p1.y - stageRect.top };
+      const rp2 = { x: p2.x - stageRect.left, y: p2.y - stageRect.top };
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("class", "pointer-arrow");
+      path.setAttribute("d", `M ${rp1.x} ${rp1.y} Q ${(rp1.x + rp2.x) / 2} ${(rp1.y + rp2.y) / 2 - 30} ${rp2.x} ${rp2.y}`);
+      els.arrowLayer.appendChild(path);
+    });
+
+  }
+
+
+
+  function renderFrame(){
+
+    const demo = currentDemo();
+
+    const f = demo.frames[state.frame];
+
+
+
+    els.codeLine.innerHTML = f.code;
+
+    renderNamespace(f.ns);
+
+    renderCells(f.cells);
+
+    els.caption.textContent = f.caption;
+
+    if (f.callout) {
+      els.callout.classList.add("show");
+      els.calloutText.textContent = f.calloutMsg;
+    } else {
+      els.callout.classList.remove("show");
+    }
+
+    if (f.arrows && f.arrows.length) {
+      setTimeout(() => drawArrows(f.arrows), 50);
+    } else {
+      drawArrows([]);
+    }
+
+    updateStepDots();
+
+  }
+
+
+
+  function buildStepDots(){
+    els.steps.innerHTML = "";
+    for (let i = 0; i < totalFrames(); i++) {
+      const dot = document.createElement("button");
+      dot.className = "dot" + (i === 0 ? " active" : "");
+      dot.addEventListener("click", () => { state.frame = i; renderFrame(); });
+      els.steps.appendChild(dot);
+    }
+    updateStepCount();
+  }
+
+
+
+  function updateStepDots(){
+    document.querySelectorAll(".dot").forEach((d, i) => {
+      d.classList.toggle("active", i === state.frame);
+    });
+    updateStepCount();
+  }
+
+
+
+  function updateStepCount(){
+    els.stepCount.textContent = `${state.frame + 1} / ${totalFrames()}`;
+  }
+
+
+
+  function setupCode(){
+    els.codeLine.textContent = "a = 10";
+  }
+
+
+
+  // ---------- Playback controls ----------
+
+  function setPlayingUI(playing){
+    els.iconPlay.style.display = playing ? "none" : "block";
+    els.iconPause.style.display = playing ? "block" : "none";
+    els.playLabel.textContent = playing ? "Pause" : "Play";
+  }
+
+
+
+  function play(){
+    if (state.frame >= totalFrames() - 1) state.frame = 0;
+    state.playing = true;
+    setPlayingUI(true);
+    const interval = setInterval(() => {
+      if (!state.playing || state.frame >= totalFrames() - 1) {
+        clearInterval(interval);
+        state.playing = false;
+        setPlayingUI(false);
+        return;
+      }
+      state.frame++;
+      renderFrame();
+    }, 1500);
+  }
+
+
+
+  function pause(){
+    state.playing = false;
+    setPlayingUI(false);
+  }
+
+
+
+  function resetDemo(){
+    state.frame = 0;
+    pause();
+    renderFrame();
+  }
+
+
+
+  function stepBack(){
+    if (state.frame > 0) state.frame--;
+    renderFrame();
+  }
+
+  function stepFwd(){
+    if (state.frame < totalFrames() - 1) state.frame++;
+    renderFrame();
+  }
+
+
+
+  els.btnPlay.addEventListener("click", () => { state.playing ? pause() : play(); });
+
+  els.btnReset.addEventListener("click", resetDemo);
+
+  els.btnPrev.addEventListener("click", stepBack);
+
+  els.btnNext.addEventListener("click", stepFwd);
+
+  els.btnApplyValue.addEventListener("click", () => {
+    const val = els.valueInput.value || "10";
+    // In a full version, you'd update demos[state.demo] frames here
+    resetDemo();
+  });
+
+
+
+  // ---------- Tabs ----------
+
+  function switchDemo(name){
+    state.demo = name;
+    state.frame = 0;
+    pause();
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    (name === "single" ? els.tabSingle : els.tabList).classList.add("active");
+    buildStepDots();
+    renderFrame();
+  }
+
+
+
+  els.tabSingle.addEventListener("click", () => switchDemo("single"));
+
+  els.tabList.addEventListener("click", () => switchDemo("list"));
+
+
+
+  window.addEventListener("resize", () => {
+    if (state.frame < totalFrames()) {
+      const f = currentDemo().frames[state.frame];
+      if (f.arrows && f.arrows.length) setTimeout(() => drawArrows(f.arrows), 50);
+    }
+  });
+
+
+
+  // ---------- Init ----------
+
+  setupCode();
+
+  buildStepDots();
+
+  renderFrame();
+
+})();
+
+</script>
+
 </body>
+
 </html>
