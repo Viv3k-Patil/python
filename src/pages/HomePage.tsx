@@ -1,18 +1,49 @@
 import React from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import HomePage from './pages/HomePage'
-import AnimationsPage from './pages/AnimationsPage'
+import { Link } from 'react-router-dom'
 
-export default function App() {
+export default function HomePage() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/animations" element={<AnimationsPage />} />
-      </Routes>
-    </Router>
-  )
-}
+    <div>
+      <header>
+        <div className="header-inner">
+          <div className="eyebrow">Syllabus · Compressed Track</div>
+          <h1>Full-Stack Development</h1>
+          <p className="sub">Python · SQL · REST APIs · FastAPI · HTML/CSS/JS · React — condensed from the 120-day master curriculum for a daily, 1.5-hour class running 7 days a week.</p>
+          <div className="stat-row">
+            <div className="stat"><div className="num">9</div><div className="label">Modules</div></div>
+            <div className="stat"><div className="num">4</div><div className="label">Built projects</div></div>
+            <div className="stat"><div className="num">1</div><div className="label">Capstone portal</div></div>
+          </div>
+          <div className="tech-chips" aria-hidden="false">
+            <span className="chip"><img className="chip-icon" src="https://cdn.simpleicons.org/python/3B6EA5" alt="Python"/><span>Python</span></span>
+            <span className="chip"><img className="chip-icon" src="https://cdn.simpleicons.org/javascript/000000" alt="JavaScript"/><span>JavaScript</span></span>
+            <span className="chip"><img className="chip-icon" src="https://cdn.simpleicons.org/react/61DAFB" alt="React"/><span>React</span></span>
+            <span className="chip"><img className="chip-icon" src="https://cdn.simpleicons.org/fastapi/009688" alt="FastAPI"/><span>FastAPI</span></span>
+            <span className="chip"><img className="chip-icon" src="https://cdn.simpleicons.org/html5/E34F26" alt="HTML5"/><span>HTML</span></span>
+            <span className="chip"><img className="chip-icon" src="https://cdn.simpleicons.org/css3/1572B6" alt="CSS3"/><span>CSS</span></span>
+            <span className="chip"><img className="chip-icon" src="https://cdn.simpleicons.org/openapi/6CC24A" alt="OpenAPI"/><span>REST API</span></span>
+            <span className="chip"><img className="chip-icon" src="https://cdn.simpleicons.org/postman/FF6C37" alt="Postman"/><span>Postman</span></span>
+            <span className="chip"><img className="chip-icon" src="https://cdn.simpleicons.org/postgresql/31648A" alt="PostgreSQL"/><span>SQL</span></span>
+          </div>
+        </div>
+      </header>
+
+      <div className="layout">
+        <nav className="spine">
+          <Link to="/#m1"><span className="dot nav-dot-python"></span>🐍 Python Foundations<span className="dayrange">1–9</span></Link>
+          <Link to="/#m2"><span className="dot nav-dot-oop"></span>🧭 OOP in Python<span className="dayrange">10–14</span></Link>
+          <Link to="/#m3"><span className="dot nav-dot-oop"></span>🛠️ Python Essentials<span className="dayrange">15–17</span></Link>
+          <Link to="/#m4"><span className="dot nav-dot-sql"></span>🗄️ SQL & Databases<span className="dayrange">18–22</span></Link>
+          <Link to="/#m5"><span className="dot nav-dot-api"></span>🚀 REST API & FastAPI<span className="dayrange">23–29</span></Link>
+          <Link to="/#m6"><span className="dot nav-dot-web"></span>🌐 HTML & CSS<span className="dayrange">30–34</span></Link>
+          <Link to="/#m7"><span className="dot nav-dot-js"></span>🟨 JavaScript & DOM<span className="dayrange">35–39</span></Link>
+          <Link to="/#m8"><span className="dot nav-dot-react"></span>⚛️ React Fundamentals<span className="dayrange">40–45</span></Link>
+          <Link to="/#m9"><span className="dot nav-dot-capstone"></span>🏁 Integration & Capstone<span className="dayrange">46–60</span></Link>
+          <Link to="/animations" className="animations-link">▶ Animations</Link>
+        </nav>
+
+        <main>
+          <details id="m1" className="module m-python" open>
             <summary className="module-head">
               <div className="idx">1</div>
               <div className="titles">
@@ -33,8 +64,6 @@ export default function App() {
               <div className="day"><div className="tag">DAY 9</div><div><h3 style={{display:'inline'}}>Build: Console Utility App</h3><span className="flag">PROJECT</span><ul><li>Combine syntax, structures, functions, files into one small CLI tool (e.g. contact book / expense tracker)</li></ul></div></div>
             </div>
           </details>
-
-          {/* Modules 2..9 (omitted for brevity in code view, but included in final file) */}
 
           <details id="m2" className="module m-oop">
             <summary className="module-head">
