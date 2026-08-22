@@ -1,3 +1,7 @@
+
+
+## Python memory animation · HTML
+
 <!DOCTYPE html>
 
 <html lang="en">
@@ -98,11 +102,9 @@
 
     background-image:
 
-      linear-gradient(var(--panel) 1px, transparent 1px),
+      radial-gradient(circle at 15% 8%, rgba(77,214,201,0.06), transparent 40%),
 
-      linear-gradient(90deg, var(--panel) 1px, transparent 1px);
-
-    background-size: 28px 28px;
+      radial-gradient(circle at 85% 92%, rgba(160,140,255,0.06), transparent 40%);
 
     padding: 32px 20px 64px;
 
@@ -1053,8 +1055,11 @@
   function resetCells(){
 
     cells.forEach(c => {
+
       c.className = "cell";
+
       c.innerHTML = '<span class="cell-addr">' + c.dataset.addr + "</span>";
+
     });
 
   }
@@ -1066,80 +1071,255 @@
   const demos = {
 
     single: {
+
+      codeHTML: '<span class="tok-name">a</span> <span class="tok-op">=</span> <span class="tok-num">10</span><span class="caret"></span>',
+
       frames: [
+
         {
-          code: "a <span class='tok-op'>=</span> <span class='tok-num'>10</span><span class='caret'></span>",
-          ns: [],
+
+          codeActive: false,
+
+          namespace: [],
+
           cells: {},
-          caption: "Ready. Press Play to see what happens.",
-          callout: false,
-          arrows: []
+
+          caption: "Press Play to see what happens when Python runs a = 10.",
+
+          callout: null
+
         },
+
         {
-          code: "a <span class='tok-op'>=</span> <span class='tok-num'>10</span>",
-          ns: [{ name: "a", type: "reference", value: null, addr: null, bound: false }],
+
+          codeActive: true,
+
+          namespace: [{ name: "a", bound: false }],
+
           cells: {},
-          caption: "1. A new variable name 'a' is created in the namespace.",
-          callout: false,
-          arrows: []
+
+          caption: "Python reads the line and prepares to bind the name a.",
+
+          callout: null
+
         },
+
         {
-          code: "a <span class='tok-op'>=</span> <span class='tok-num'>10</span>",
-          ns: [{ name: "a", type: "reference", value: null, addr: "0x7FE2A000", bound: false }],
-          cells: { "0": { type: "int", value: "10", addr: "0x7FE2A000" } },
-          caption: "2. An integer object holding 10 is created in RAM at address 0x7FE2A000.",
-          callout: false,
-          arrows: []
+
+          codeActive: true,
+
+          namespace: [{ name: "a", bound: false }],
+
+          cells: { 13: { type: "int", value: "10" } },
+
+          caption: "An integer object 10 is allocated in RAM at " + addrFor(13) + ".",
+
+          callout: null
+
         },
+
         {
-          code: "a <span class='tok-op'>=</span> <span class='tok-num'>10</span>",
-          ns: [{ name: "a", type: "reference", value: "10", addr: "0x7FE2A000", bound: true }],
-          cells: { "0": { type: "int", value: "10", addr: "0x7FE2A000" } },
-          caption: "3. The name 'a' is bound to the object. The variable holds a reference (pointer).",
-          callout: true,
-          calloutMsg: "The variable 'a' doesn't hold the value 10 — it holds a reference to the object at 0x7FE2A000.",
-          arrows: [{ from: "ns", to: "cell-0", text: "ref" }]
+
+          codeActive: true,
+
+          namespace: [{ name: "a", bound: true, type: "int" }],
+
+          cells: { 13: { type: "int", value: "10" } },
+
+          arrows: [{ from: "ns-a", to: "cell-13" }],
+
+          caption: "The name a is bound to that address — it now points at the object.",
+
+          callout: null
+
+        },
+
+        {
+
+          codeActive: true,
+
+          namespace: [{ name: "a", bound: true, type: "int" }],
+
+          cells: { 13: { type: "int", value: "10" } },
+
+          arrows: [{ from: "ns-a", to: "cell-13" }],
+
+          caption: "a itself never holds 10 — it holds an address that leads to 10.",
+
+          callout: "<b>Key insight:</b> assignment in Python never copies data. It creates a name and points it at an object already sitting in memory."
+
         }
+
       ]
+
     },
 
     list: {
+
+      codeHTML: '<span class="tok-name">lst</span> <span class="tok-op">=</span> <span class="tok-punc">[</span><span class="tok-num">1</span><span class="tok-punc">,</span> <span class="tok-num">2</span><span class="tok-punc">,</span> <span class="tok-num">3</span><span class="tok-punc">]</span><span class="caret"></span>',
+
       frames: [
+
         {
-          code: "lst <span class='tok-op'>=</span> [<span class='tok-num'>1</span>, <span class='tok-num'>2</span>, <span class='tok-num'>3</span>]<span class='caret'></span>",
-          ns: [],
+
+          codeActive: false,
+
+          namespace: [],
+
           cells: {},
-          caption: "Ready. Press Play to see how lists differ.",
-          callout: false,
-          arrows: []
+
+          caption: "Press Play to see how lst = [1, 2, 3] is stored.",
+
+          callout: null
+
         },
+
         {
-          code: "lst <span class='tok-op'>=</span> [<span class='tok-num'>1</span>, <span class='tok-num'>2</span>, <span class='tok-num'>3</span>]",
-          ns: [{ name: "lst", type: "reference", value: null, addr: null, bound: false }],
+
+          codeActive: true,
+
+          namespace: [{ name: "lst", bound: false }],
+
           cells: {},
-          caption: "1. A new variable name 'lst' is created in the namespace.",
-          callout: false,
-          arrows: []
+
+          caption: "Python reads the line and prepares to bind the name lst.",
+
+          callout: null
+
         },
+
         {
-          code: "lst <span class='tok-op'>=</span> [<span class='tok-num'>1</span>, <span class='tok-num'>2</span>, <span class='tok-num'>3</span>]",
-          ns: [{ name: "lst", type: "reference", value: null, addr: "0x7FE2A000", bound: false }],
-          cells: { "0": { type: "list", value: "list", addr: "0x7FE2A000", content: "→ [3 items]" } },
-          caption: "2. A list object is created in RAM at 0x7FE2A000. It stores references to the integers.",
-          callout: false,
-          arrows: []
+
+          codeActive: true,
+
+          namespace: [{ name: "lst", bound: false }],
+
+          cells: { 14: { type: "list", addr: addrFor(14) } },
+
+          caption: "A list object is created at " + addrFor(14) + " — it reserves 3 empty pointer slots.",
+
+          callout: null
+
         },
+
         {
-          code: "lst <span class='tok-op'>=</span> [<span class='tok-num'>1</span>, <span class='tok-num'>2</span>, <span class='tok-num'>3</span>]",
-          ns: [{ name: "lst", type: "reference", value: "list", addr: "0x7FE2A000", bound: true }],
-          cells: { "0": { type: "list", value: "list", addr: "0x7FE2A000", content: "→ [3 items]" }, "1": { type: "int", value: "1" }, "2": { type: "int", value: "2" }, "3": { type: "int", value: "3" } },
-          caption: "3. The name 'lst' is bound to the list object. Modifying the list updates the shared object.",
-          callout: true,
-          calloutMsg: "Lists hold references to objects. All variables pointing to the same list see the same data.",
-          arrows: [{ from: "ns", to: "cell-0", text: "ref" }]
+
+          codeActive: true,
+
+          namespace: [{ name: "lst", bound: true, type: "list" }],
+
+          cells: { 14: { type: "list", addr: addrFor(14) } },
+
+          arrows: [{ from: "ns-lst", to: "cell-14" }],
+
+          caption: "lst is bound to the list object's address, " + addrFor(14) + ".",
+
+          callout: null
+
+        },
+
+        {
+
+          codeActive: true,
+
+          namespace: [{ name: "lst", bound: true, type: "list" }],
+
+          cells: {
+
+            14: { type: "list", addr: addrFor(14) },
+
+            2: { type: "int", value: "1" },
+
+            21: { type: "int", value: "2" },
+
+            29: { type: "int", value: "3" }
+
+          },
+
+          arrows: [{ from: "ns-lst", to: "cell-14" }],
+
+          caption: "Three separate integer objects — 1, 2, 3 — are created elsewhere in RAM.",
+
+          callout: null
+
+        },
+
+        {
+
+          codeActive: true,
+
+          namespace: [{ name: "lst", bound: true, type: "list" }],
+
+          cells: {
+
+            14: { type: "list", addr: addrFor(14) },
+
+            2: { type: "int", value: "1" },
+
+            21: { type: "int", value: "2" },
+
+            29: { type: "int", value: "3" }
+
+          },
+
+          arrows: [
+
+            { from: "ns-lst", to: "cell-14" },
+
+            { from: "slot-0", to: "cell-2" },
+
+            { from: "slot-1", to: "cell-21" },
+
+            { from: "slot-2", to: "cell-29" }
+
+          ],
+
+          caption: "Each slot inside the list stores a pointer to one of those objects — not the value itself.",
+
+          callout: null
+
+        },
+
+        {
+
+          codeActive: true,
+
+          namespace: [{ name: "lst", bound: true, type: "list" }],
+
+          cells: {
+
+            14: { type: "list", addr: addrFor(14) },
+
+            2: { type: "int", value: "1" },
+
+            21: { type: "int", value: "2" },
+
+            29: { type: "int", value: "3" }
+
+          },
+
+          arrows: [
+
+            { from: "ns-lst", to: "cell-14" },
+
+            { from: "slot-0", to: "cell-2" },
+
+            { from: "slot-1", to: "cell-21" },
+
+            { from: "slot-2", to: "cell-29" }
+
+          ],
+
+          caption: "The list itself is just an ordered array of references.",
+
+          callout: "<b>Key insight:</b> a list stores pointers to its elements, scattered anywhere in RAM — not the elements in a contiguous block. That's also why one list can freely mix types."
+
         }
+
       ]
+
     }
+
   };
 
 
@@ -1209,10 +1389,17 @@
     els.nsBody.innerHTML = "";
 
     entries.forEach(entry => {
+
       const box = document.createElement("div");
+
       box.className = "name-box" + (entry.bound ? " is-bound" : "");
-      box.innerHTML = `<span class="nm">${entry.name}</span><span class="ty">${entry.type}</span>`;
+
+      box.id = "ns-" + entry.name;
+
+      box.innerHTML = '<span class="nm">' + entry.name + '</span><span class="ty">' + (entry.type || "") + "</span>";
+
       els.nsBody.appendChild(box);
+
     });
 
   }
@@ -1224,16 +1411,49 @@
     resetCells();
 
     Object.keys(cellMap).forEach(idx => {
-      const cell = cells[idx];
-      const data = cellMap[idx];
-      cell.classList.add("is-" + data.type);
-      let html = '<span class="cell-addr">' + cell.dataset.addr + '</span>';
-      if (data.type === "int") {
-        html += '<span class="cell-val">' + data.value + '</span><span class="cell-badge">int</span>';
-      } else if (data.type === "list") {
-        html += '<span class="list-head">list</span><div class="slots"><span class="slot">0x...</span></div><span class="cell-badge">list</span>';
+
+      const spec = cellMap[idx];
+
+      const el = document.getElementById("cell-" + idx);
+
+      if (!el) return;
+
+      if (spec.type === "int"){
+
+        el.classList.add("is-int");
+
+        el.innerHTML =
+
+          '<span class="cell-addr">' + el.dataset.addr + '</span>' +
+
+          '<span class="cell-badge">int</span>' +
+
+          '<span class="cell-val">' + spec.value + "</span>";
+
+      } else if (spec.type === "list"){
+
+        el.classList.add("is-list");
+
+        el.innerHTML =
+
+          '<span class="cell-addr">' + el.dataset.addr + '</span>' +
+
+          '<span class="cell-badge">list</span>' +
+
+          '<span class="list-head">list · len 3</span>' +
+
+          '<div class="slots">' +
+
+            '<div class="slot" id="slot-0">0</div>' +
+
+            '<div class="slot" id="slot-1">1</div>' +
+
+            '<div class="slot" id="slot-2">2</div>' +
+
+          "</div>";
+
       }
-      cell.innerHTML = html;
+
     });
 
   }
@@ -1241,6 +1461,8 @@
 
 
   function rectPoint(rect, towardX, towardY){
+
+    // returns a point on the border of rect, in the direction of (towardX, towardY) from its center
 
     const cx = rect.left + rect.width / 2;
 
@@ -1277,19 +1499,79 @@
 
 
     specs.forEach(spec => {
-      const fromEl = spec.from === "ns" ? els.nsBody.firstChild : document.getElementById(spec.to.replace("cell-", "cell-"));
+
+      const fromEl = document.getElementById(spec.from);
+
       const toEl = document.getElementById(spec.to);
+
       if (!fromEl || !toEl) return;
-      const fromRect = fromEl.getBoundingClientRect();
-      const toRect = toEl.getBoundingClientRect();
-      const p1 = rectPoint(fromRect, toRect.left + toRect.width / 2, toRect.top + toRect.height / 2);
-      const p2 = rectPoint(toRect, fromRect.left + fromRect.width / 2, fromRect.top + fromRect.height / 2);
-      const rp1 = { x: p1.x - stageRect.left, y: p1.y - stageRect.top };
-      const rp2 = { x: p2.x - stageRect.left, y: p2.y - stageRect.top };
+
+
+
+      const r1 = fromEl.getBoundingClientRect();
+
+      const r2 = toEl.getBoundingClientRect();
+
+      const c1 = { x: r1.left + r1.width / 2 - stageRect.left, y: r1.top + r1.height / 2 - stageRect.top };
+
+      const c2 = { x: r2.left + r2.width / 2 - stageRect.left, y: r2.top + r2.height / 2 - stageRect.top };
+
+
+
+      const rel1 = { left: r1.left - stageRect.left, top: r1.top - stageRect.top, width: r1.width, height: r1.height };
+
+      const rel2 = { left: r2.left - stageRect.left, top: r2.top - stageRect.top, width: r2.width, height: r2.height };
+
+
+
+      const p1 = rectPoint(rel1, c2.x, c2.y);
+
+      const p2 = rectPoint(rel2, c1.x, c1.y);
+
+
+
+      const dx = p2.x - p1.x;
+
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+
+      const d = "M " + p1.x + " " + p1.y + " C " + (p1.x + dx * 0.5) + " " + p1.y + ", " + (p2.x - dx * 0.5) + " " + p2.y + ", " + p2.x + " " + p2.y;
+
+      path.setAttribute("d", d);
+
       path.setAttribute("class", "pointer-arrow");
-      path.setAttribute("d", `M ${rp1.x} ${rp1.y} Q ${(rp1.x + rp2.x) / 2} ${(rp1.y + rp2.y) / 2 - 30} ${rp2.x} ${rp2.y}`);
+
+      path.setAttribute("marker-end", "url(#arrowhead)");
+
       els.arrowLayer.appendChild(path);
+
+
+
+      const len = path.getTotalLength();
+
+      path.style.strokeDasharray = len;
+
+      path.style.strokeDashoffset = len;
+
+      // force reflow then animate to 0
+
+      path.getBoundingClientRect();
+
+      requestAnimationFrame(() => { path.style.strokeDashoffset = 0; });
+
+
+
+      const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+
+      dot.setAttribute("cx", p1.x);
+
+      dot.setAttribute("cy", p1.y);
+
+      dot.setAttribute("r", 2.5);
+
+      dot.setAttribute("class", "origin-dot");
+
+      els.arrowLayer.appendChild(dot);
+
     });
 
   }
@@ -1304,63 +1586,112 @@
 
 
 
-    els.codeLine.innerHTML = f.code;
+    // code line
 
-    renderNamespace(f.ns);
+    els.codeLine.classList.toggle("is-active", !!f.codeActive);
 
-    renderCells(f.cells);
 
-    els.caption.textContent = f.caption;
 
-    if (f.callout) {
+    // namespace
+
+    renderNamespace(f.namespace || []);
+
+
+
+    // cells
+
+    renderCells(f.cells || {});
+
+
+
+    // caption (retrigger fade animation)
+
+    els.caption.style.animation = "none";
+
+    els.caption.offsetHeight; // reflow
+
+    els.caption.style.animation = "";
+
+    els.caption.textContent = f.caption || "";
+
+
+
+    // callout
+
+    if (f.callout){
+
+      els.calloutText.innerHTML = f.callout;
+
       els.callout.classList.add("show");
-      els.calloutText.textContent = f.calloutMsg;
+
     } else {
+
       els.callout.classList.remove("show");
+
     }
 
-    if (f.arrows && f.arrows.length) {
-      setTimeout(() => drawArrows(f.arrows), 50);
-    } else {
-      drawArrows([]);
-    }
 
-    updateStepDots();
+
+    // arrows (after layout settles)
+
+    requestAnimationFrame(() => requestAnimationFrame(() => drawArrows(f.arrows)));
+
+
+
+    // controls state
+
+    els.btnPrev.disabled = state.frame === 0;
+
+    els.btnNext.disabled = state.frame === totalFrames() - 1;
+
+
+
+    // step dots
+
+    Array.from(els.steps.children).forEach((dot, i) => {
+
+      dot.classList.toggle("active", i === state.frame);
+
+    });
+
+    els.stepCount.textContent = "Step " + (state.frame + 1) + " / " + totalFrames();
 
   }
 
 
 
   function buildStepDots(){
+
     els.steps.innerHTML = "";
-    for (let i = 0; i < totalFrames(); i++) {
+
+    for (let i = 0; i < totalFrames(); i++){
+
       const dot = document.createElement("button");
-      dot.className = "dot" + (i === 0 ? " active" : "");
-      dot.addEventListener("click", () => { state.frame = i; renderFrame(); });
+
+      dot.className = "dot";
+
+      dot.setAttribute("aria-label", "Go to step " + (i + 1));
+
+      dot.addEventListener("click", () => { pause(); state.frame = i; renderFrame(); });
+
       els.steps.appendChild(dot);
+
     }
-    updateStepCount();
-  }
 
-
-
-  function updateStepDots(){
-    document.querySelectorAll(".dot").forEach((d, i) => {
-      d.classList.toggle("active", i === state.frame);
-    });
-    updateStepCount();
-  }
-
-
-
-  function updateStepCount(){
-    els.stepCount.textContent = `${state.frame + 1} / ${totalFrames()}`;
   }
 
 
 
   function setupCode(){
-    els.codeLine.textContent = "a = 10";
+    els.codeLine.innerHTML = currentDemo().codeHTML;
+    if (state.demo === "single") {
+      const value = els.valueInput.value.trim() || "10";
+      const numeric = Number(value);
+      const displayValue = Number.isFinite(numeric) ? String(numeric) : '"' + value.replace(/"/g, '\\\"') + '"';
+      els.codeLine.innerHTML = '<span class="tok-name">a</span> <span class="tok-op">=</span> ' +
+        (Number.isFinite(numeric) ? '<span class="tok-num">' + displayValue + '</span>' : '<span class="tok-str">' + displayValue + '</span>') +
+        '<span class="caret"></span>';
+    }
   }
 
 
@@ -1368,54 +1699,87 @@
   // ---------- Playback controls ----------
 
   function setPlayingUI(playing){
-    els.iconPlay.style.display = playing ? "none" : "block";
-    els.iconPause.style.display = playing ? "block" : "none";
+
+    state.playing = playing;
+
+    els.iconPlay.style.display = playing ? "none" : "inline-block";
+
+    els.iconPause.style.display = playing ? "inline-block" : "none";
+
     els.playLabel.textContent = playing ? "Pause" : "Play";
+
   }
 
 
 
   function play(){
-    if (state.frame >= totalFrames() - 1) state.frame = 0;
-    state.playing = true;
+
+    if (state.frame === totalFrames() - 1){ state.frame = 0; renderFrame(); }
+
     setPlayingUI(true);
-    const interval = setInterval(() => {
-      if (!state.playing || state.frame >= totalFrames() - 1) {
-        clearInterval(interval);
-        state.playing = false;
+
+    clearInterval(state.timer);
+
+    state.timer = setInterval(() => {
+
+      if (state.frame >= totalFrames() - 1){
+
+        clearInterval(state.timer);
+
         setPlayingUI(false);
+
         return;
+
       }
-      state.frame++;
+
+      state.frame += 1;
+
       renderFrame();
-    }, 1500);
+
+    }, 2500);
+
   }
 
 
 
   function pause(){
-    state.playing = false;
+
+    clearInterval(state.timer);
+
     setPlayingUI(false);
+
   }
 
 
 
   function resetDemo(){
+
+    clearInterval(state.timer);
+
+    setPlayingUI(false);
+
     state.frame = 0;
-    pause();
+
     renderFrame();
+
   }
 
 
 
   function stepBack(){
-    if (state.frame > 0) state.frame--;
-    renderFrame();
+
+    pause();
+
+    if (state.frame > 0){ state.frame -= 1; renderFrame(); }
+
   }
 
   function stepFwd(){
-    if (state.frame < totalFrames() - 1) state.frame++;
-    renderFrame();
+
+    pause();
+
+    if (state.frame < totalFrames() - 1){ state.frame += 1; renderFrame(); }
+
   }
 
 
@@ -1429,8 +1793,19 @@
   els.btnNext.addEventListener("click", stepFwd);
 
   els.btnApplyValue.addEventListener("click", () => {
-    const val = els.valueInput.value || "10";
-    // In a full version, you'd update demos[state.demo] frames here
+    if (state.demo !== "single") return;
+    const value = els.valueInput.value.trim() || "10";
+    const numeric = Number(value);
+    const displayValue = Number.isFinite(numeric) ? String(numeric) : '"' + value.replace(/"/g, '\\\"') + '"';
+    demos.single.codeHTML = '<span class="tok-name">a</span> <span class="tok-op">=</span> ' +
+      (Number.isFinite(numeric) ? '<span class="tok-num">' + displayValue + '</span>' : '<span class="tok-str">' + displayValue + '</span>') +
+      '<span class="caret"></span>';
+    demos.single.frames[2].cells[13].value = displayValue;
+    demos.single.frames[2].caption = "An object " + displayValue + " is allocated in RAM at " + addrFor(13) + ".";
+    demos.single.frames[3].cells[13].value = displayValue;
+    demos.single.frames[4].cells[13].value = displayValue;
+    demos.single.frames[4].caption = "a itself never holds " + displayValue + " — it holds an address that leads to the object.";
+    setupCode();
     resetDemo();
   });
 
@@ -1439,13 +1814,29 @@
   // ---------- Tabs ----------
 
   function switchDemo(name){
+
+    clearInterval(state.timer);
+
+    setPlayingUI(false);
+
     state.demo = name;
+
     state.frame = 0;
-    pause();
-    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-    (name === "single" ? els.tabSingle : els.tabList).classList.add("active");
+
+    els.tabSingle.classList.toggle("active", name === "single");
+
+    els.tabSingle.setAttribute("aria-selected", name === "single");
+
+    els.tabList.classList.toggle("active", name === "list");
+
+    els.tabList.setAttribute("aria-selected", name === "list");
+
+    setupCode();
+
     buildStepDots();
+
     renderFrame();
+
   }
 
 
@@ -1456,11 +1847,14 @@
 
 
 
+  // redraw arrows on resize
+
   window.addEventListener("resize", () => {
-    if (state.frame < totalFrames()) {
-      const f = currentDemo().frames[state.frame];
-      if (f.arrows && f.arrows.length) setTimeout(() => drawArrows(f.arrows), 50);
-    }
+
+    const f = currentDemo().frames[state.frame];
+
+    drawArrows(f.arrows);
+
   });
 
 
